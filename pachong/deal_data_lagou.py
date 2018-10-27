@@ -1,52 +1,56 @@
-# coding=utf-8
-
-
+# coding=GBK
+import jieba
 import pandas as pd
 import re
 import matplotlib.pyplot as plt
+import pylab as mpl
+from wordcloud import WordCloud
+
+mpl.rcParams['font.sans-serif'] = ['simHei']
+mpl.rcParams['axes.unicode_minus'] = False
 
 
 def atoi(s):
     s = s[::-1]
     num = 0
-    for i, v in enumerate(s):
+    for s, v in enumerate(s):
         for j in range(0, 10):
             if v == str(j):
-                num += j * (10 ** i)
+                num += j * (10 ** s)
     return num
 
 
-df = pd.read_csv('lagou.csv', encoding='utf-8')
-# æ•°æ®æ¸…æ´—,å‰”é™¤å®ä¹ å²—ä½
-df.drop(df[df['èŒä½åç§°'].str.contains('å®ä¹ ')].index, inplace=True)
+df = pd.read_csv('lagou.csv', encoding='gbk')
+# Êı¾İÇåÏ´,ÌŞ³ıÊµÏ°¸ÚÎ»
+df.drop(df[df['Ö°Î»Ãû³Æ'].str.contains('ÊµÏ°')].index, inplace=True)
 # print(df.describe())
-# ç”±äºCSVæ–‡ä»¶å†…çš„æ•°æ®æ˜¯å­—ç¬¦ä¸²å½¢å¼,å…ˆç”¨æ­£åˆ™è¡¨è¾¾å¼å°†å­—ç¬¦ä¸²è½¬åŒ–ä¸ºåˆ—è¡¨,å†å–åŒºé—´çš„å‡å€¼
+# ÓÉÓÚCSVÎÄ¼şÄÚµÄÊı¾İÊÇ×Ö·û´®ĞÎÊ½,ÏÈÓÃÕıÔò±í´ïÊ½½«×Ö·û´®×ª»¯ÎªÁĞ±í,ÔÙÈ¡Çø¼äµÄ¾ùÖµ
 pattern = 'd+'
-df['work_year'] = df['å·¥ä½œç»éªŒ'].str.findall(pattern)
-# æ•°æ®å¤„ç†åçš„å·¥ä½œå¹´é™
+df['work_year'] = df['¹¤×÷¾­Ñé'].str.findall(pattern)
+# Êı¾İ´¦ÀíºóµÄ¹¤×÷ÄêÏŞ
 avg_work_year = []
-# å·¥ä½œå¹´é™
+# ¹¤×÷ÄêÏŞ
 for i in df['work_year']:
-    # å¦‚æœå·¥ä½œç»éªŒä¸º'ä¸é™'æˆ–'åº”å±Šæ¯•ä¸šç”Ÿ',é‚£ä¹ˆåŒ¹é…å€¼ä¸ºç©º,å·¥ä½œå¹´é™ä¸º0
+    # Èç¹û¹¤×÷¾­ÑéÎª'²»ÏŞ'»ò'Ó¦½ì±ÏÒµÉú',ÄÇÃ´Æ¥ÅäÖµÎª¿Õ,¹¤×÷ÄêÏŞÎª0
     if len(i) == 0:
         avg_work_year.append(0)
-        # å¦‚æœåŒ¹é…å€¼ä¸ºä¸€ä¸ªæ•°å€¼,é‚£ä¹ˆè¿”å›è¯¥æ•°å€¼
+        # Èç¹ûÆ¥ÅäÖµÎªÒ»¸öÊıÖµ,ÄÇÃ´·µ»Ø¸ÃÊıÖµ
     elif len(i) == 1:
         avg_work_year.append(int(''.join(i)))
-        # å¦‚æœåŒ¹é…å€¼ä¸ºä¸€ä¸ªåŒºé—´,é‚£ä¹ˆå–å¹³å‡å€¼
+        # Èç¹ûÆ¥ÅäÖµÎªÒ»¸öÇø¼ä,ÄÇÃ´È¡Æ½¾ùÖµ
     else:
         num_list = [int(j) for j in i]
         avg_year = sum(num_list) / 2
         avg_work_year.append(avg_year)
-df['å·¥ä½œç»éªŒ'] = avg_work_year
+df['¹¤×÷¾­Ñé'] = avg_work_year
 
-# å°†å­—ç¬¦ä¸²è½¬åŒ–ä¸ºåˆ—è¡¨,å†å–åŒºé—´çš„å‰25%ï¼Œæ¯”è¾ƒè´´è¿‘ç°å®
+# ½«×Ö·û´®×ª»¯ÎªÁĞ±í,ÔÙÈ¡Çø¼äµÄÇ°25%£¬±È½ÏÌù½üÏÖÊµ
 sa1 = []
 sa2 = []
 sa3 = []
 sa4 = []
 avg_salary = []
-t = df['å·¥èµ„']
+t = df['¹¤×Ê']
 t2 = t.tolist()
 for i in range(len(t2)):
     k1 = re.findall(r"(.+?)k-", t2[i])
@@ -62,20 +66,80 @@ for i in range(len(sa1)):
     t2 = atoi(sa2[i])
     sa3.append(t1)
     sa4.append(t2)
-    t3 = t2 - t1
+    t3 = (t2 + t1) / 2
     avg_salary.append(t3)
 
-# æœˆè–ª
+# ÔÂĞ½
 
-df['æœˆå·¥èµ„'] = avg_salary
+df['ÔÂ¹¤×Ê'] = avg_salary
 
-# å°†å­¦å†ä¸é™çš„èŒä½è¦æ±‚è®¤å®šä¸ºæœ€ä½å­¦å†:å¤§ä¸“
-df['å­¦å†è¦æ±‚'] = df['å­¦å†è¦æ±‚'].replace('ä¸é™', 'å¤§ä¸“')
+# ½«Ñ§Àú²»ÏŞµÄÖ°Î»ÒªÇóÈÏ¶¨Îª×îµÍÑ§Àú:´ó×¨
+df['Ñ§ÀúÒªÇó'] = df['Ñ§ÀúÒªÇó'].replace('²»ÏŞ', '´ó×¨')
 
-# ç»˜åˆ¶é¢‘ç‡ç›´æ–¹å›¾å¹¶ä¿å­˜
-plt.hist(df['æœˆå·¥èµ„'])
-plt.xlabel(u'å·¥èµ„ (åƒå…ƒ)', fontproperties='SimHei')
-plt.ylabel(u'é¢‘æ•°', fontproperties='SimHei')
-plt.title(u"å·¥èµ„ç›´æ–¹å›¾", fontproperties='SimHei')
-plt.savefig('è–ªèµ„.jpg')
-# plt.show()
+
+# »æÖÆÆµÂÊÖ±·½Í¼²¢±£´æ
+def draw_salary():
+    plt.hist(df['ÔÂ¹¤×Ê'])
+    plt.xlabel(u'¹¤×Ê (Ç§Ôª)', fontproperties='SimHei')
+    plt.ylabel(u'ÆµÊı', fontproperties='SimHei')
+    plt.title(u"¹¤×ÊÖ±·½Í¼", fontproperties='SimHei')
+    plt.savefig('Ğ½×Ê.jpg')
+    plt.show()
+
+
+def education_requirements_histogram():
+    dict = {}
+    for value in df['Ñ§ÀúÒªÇó']:
+        if value not in dict.keys():
+            dict[value] = 0
+        else:
+            dict[value] += 1
+    index = list(dict.keys())
+    print(index)
+    num = []
+    for value in index:
+        num.append(dict[value])
+    print(num)
+    plt.bar(x=index, height=num, width=0.5)
+    plt.show()
+
+
+# education_requirements_histogram()
+# draw_salary()
+
+
+def company_distribution_pie_chart():
+    count = df['ÇøÓò'].value_counts()
+    plt.pie(count, labels=count.keys(), labeldistance=1.4, autopct='%2.1f%%')
+    plt.axis('equal')  # Ê¹±ıÍ¼ÎªÕıÔ²ĞÎ
+    plt.legend(loc='upper left', bbox_to_anchor=(-0.1, 1))
+    plt.savefig('pie_chart.jpg')
+    plt.show()
+
+
+# company_distribution_pie_chart()
+def pictures_of_benefits():
+    # »æÖÆ´ÊÔÆ,½«Ö°Î»¸£ÀûÖĞµÄ×Ö·û´®»ã×Ü
+    text = ''
+    for line in df['Ö°Î»¸£Àû']:
+        text += line
+        # Ê¹ÓÃjiebaÄ£¿é½«×Ö·û´®·Ö¸îÎªµ¥´ÊÁĞ±í
+    cut_text = ' '.join(jieba.cut(text))
+    color_mask = plt.imread('test.jpg')  # ÉèÖÃ±³¾°Í¼
+    cloud = WordCloud(
+        background_color='white',
+        # ¶ÔÖĞÎÄ²Ù×÷±ØĞëÖ¸Ã÷×ÖÌå
+        font_path='simHei.ttf',
+        mask=color_mask,
+        max_words=1000,
+        max_font_size=100
+    ).generate(cut_text)
+
+    # ±£´æ´ÊÔÆÍ¼Æ¬
+    cloud.to_file('word_cloud.jpg')
+    plt.imshow(cloud)
+    plt.axis('off')
+    plt.show()
+
+
+# pictures_of_benefits()
