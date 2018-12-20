@@ -1,4 +1,4 @@
-# coding=utf-8 
+﻿# coding=utf-8 
 # @Time :2018/12/20 12:35
 """
 皮卡丘跳跃游戏,仿八分音符的声控小游戏
@@ -49,7 +49,6 @@ class VCGame(cocos.layer.ColorLayer):
                                  input=True,
                                  frames_per_buffer=self.numSamples)
         self.schedule(self.update)
-
     # 碰撞检测
     def collide(self):
         diffx = self.pikachu.x - self.floor.x
